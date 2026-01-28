@@ -3,14 +3,16 @@ import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { LoginDto } from './dto/login.dto';
+
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body('email') email: string) {
-    return this.authService.login(email);
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto.email);
   }
 
   // TEST PROTECTED ROUTE
