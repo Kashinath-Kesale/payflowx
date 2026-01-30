@@ -48,6 +48,9 @@ model Payment {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  settlement     Settlement?
+
+
   user           User     @relation(fields: [userId], references: [id])
   merchant       Merchant @relation(fields: [merchantId], references: [id])
 
@@ -61,5 +64,30 @@ model Payment {
 enum PaymentStatus {
   INITIATED
   SUCCESS
+  FAILED
+}
+
+
+model Settlement {
+  id            String           @id @default(uuid())
+  paymentId     String           @unique
+  amount        Decimal
+  currency      String
+  status        SettlementStatus @default(PENDING)
+  failureReason String?
+  attemptedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  payment       Payment          @relation(fields: [paymentId], references: [id])
+
+  @@map("settlements")
+}
+
+
+
+enum SettlementStatus {
+  PENDING
+  SETTLED
   FAILED
 }

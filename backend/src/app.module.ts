@@ -7,6 +7,9 @@ import { UsersModule } from './modules/users/users.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { SettlementsService } from './modules/settlements/settlements.service';
+import { SettlementsModule } from './modules/settlements/settlements.module';
+import { ReconciliationService } from './modules/reconciliation/reconciliation.service';
 
 @Module({
   imports: [
@@ -16,7 +19,9 @@ import { PaymentsModule } from './modules/payments/payments.module';
     MerchantsModule,
     AuthModule,
     PaymentsModule,
+    SettlementsModule,
   ],
   controllers: [HealthController],
+  providers: [SettlementsService, ReconciliationService],
 })
 export class AppModule {}
