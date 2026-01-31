@@ -1,6 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { AppLogger } from '../../common/logger/app-logger';
+import { AppMetrics } from '../../common/metrics/app-metrics';
 
 @Injectable()
 export class SettlementsService {
@@ -24,9 +26,13 @@ export class SettlementsService {
         },
       });
 
-      try {
-    
+      AppLogger.info('Settlement attempt started', {
+        service: 'settlements',
+        action: 'settlement_attempt',
+        entityId: settlement.id,
+      });
 
+      try {
         await this.prisma.settlement.update({
           where: { id: settlement.id },
           data: {
@@ -34,6 +40,14 @@ export class SettlementsService {
             attemptedAt: new Date(),
           },
         });
+
+        AppLogger.info('Settlement completed successfully', {
+          service: 'settlements',
+          action: 'settlement_success',
+          entityId: settlement.id,
+        });
+
+        AppMetrics.increment('settlements_settled_total');
       } catch (error) {
         await this.prisma.settlement.update({
           where: { id: settlement.id },
@@ -43,6 +57,18 @@ export class SettlementsService {
             attemptedAt: new Date(),
           },
         });
+
+        AppLogger.error('Settlement failed', {
+          service: 'settlements',
+          action: 'settlement_failed',
+          entityId: settlement.id,
+          metadata: {
+            errorType: 'SYSTEM_ERROR',
+            reason: error.message,
+          },
+        });
+
+        AppMetrics.increment('settlements_failed_total');
       }
     }
 
