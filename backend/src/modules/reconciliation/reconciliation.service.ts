@@ -14,7 +14,12 @@ export class ReconciliationService {
       include: { settlement: true },
     });
 
-    const results = [];
+    const results: {
+      paymentId: string;
+      status: 'MATCHED' | 'MISMATCHED';
+      reason?: string;
+    }[] = [];
+
 
     for (const payment of payments) {
       const settlement = payment.settlement;
