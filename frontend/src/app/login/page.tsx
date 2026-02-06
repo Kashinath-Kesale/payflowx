@@ -13,17 +13,29 @@ export default function LoginPage() {
 
         setLoading(true);
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-        });
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
 
-        const data = await res.json();
-        localStorage.setItem('token', data.accessToken);
+            if (!res.ok) {
+                const err = await res.json();
+                alert(err.message || 'Login failed');
+                setLoading(false);
+                return;
+            }
 
-        setLoading(false);
-        router.push('/payments');
+            const data = await res.json();
+            localStorage.setItem('token', data.accessToken);
+            router.push('/payments');
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Something went wrong. Check console.');
+        } finally {
+            setLoading(false);
+        }
     };
 
 
@@ -48,6 +60,10 @@ export default function LoginPage() {
                 <button onClick={handleLogin} disabled={loading} className="w-full mt-4 bg-black text-white py-2 text-sm hover:bg-gray-800">
                     {loading ? 'Signing in...' : 'Sign in'}
                 </button>
+
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                    Test user: user1@payflowx.com
+                </p>
             </div>
         </main>
     )

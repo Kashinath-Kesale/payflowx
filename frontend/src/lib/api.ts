@@ -1,8 +1,8 @@
-import {getToken} from './auth';
+import { getToken } from './auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export async function api<T> (
+export async function api<T>(
     path: string,
     options: RequestInit = {}
 ): Promise<T> {
@@ -12,13 +12,13 @@ export async function api<T> (
         ...options,
         headers: {
             'Content-Type': 'application/json',
-            ...(token ? {Authorization: `Bearer ${token}`} : {}),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...(options.headers || {}),
         }
     });
 
 
-    if(!res.ok) {
+    if (!res.ok) {
         const err = await res.json();
         throw new Error(err.message || 'Request failed');
     }

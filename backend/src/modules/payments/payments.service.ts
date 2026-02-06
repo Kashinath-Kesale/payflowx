@@ -7,7 +7,7 @@ import { AppMetrics } from '../../common/metrics/app-metrics';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createPayment(userId: string, dto: CreatePaymentDto) {
     // 1. Idempotency check
@@ -93,6 +93,12 @@ export class PaymentsService {
         AppMetrics.increment('payments_failed_total');
         return failedPayment;
       }
+    });
+  }
+  async getPayments(userId: string) {
+    return this.prisma.payment.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }
