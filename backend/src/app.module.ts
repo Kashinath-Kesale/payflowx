@@ -10,6 +10,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { SettlementsService } from './modules/settlements/settlements.service';
 import { SettlementsModule } from './modules/settlements/settlements.module';
 import { ReconciliationService } from './modules/reconciliation/reconciliation.service';
+import { ReconciliationController } from './modules/reconciliation/reconciliation.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ReconciliationService } from './modules/reconciliation/reconciliation.s
     PaymentsModule,
     SettlementsModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ReconciliationController],
   providers: [SettlementsService, ReconciliationService],
 })
-export class AppModule {}
+export class AppModule { }

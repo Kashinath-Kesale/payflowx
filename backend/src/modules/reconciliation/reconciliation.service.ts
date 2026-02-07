@@ -6,7 +6,7 @@ import { AppMetrics } from '../../common/metrics/app-metrics';
 
 @Injectable()
 export class ReconciliationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async runReconciliation() {
     const payments = await this.prisma.payment.findMany({
@@ -59,7 +59,7 @@ export class ReconciliationService {
       }
 
       if (
-        settlement.amount !== payment.amount ||
+        !settlement.amount.equals(payment.amount) ||
         settlement.currency !== payment.currency
       ) {
         AppLogger.error('Reconciliation mismatch: amount or currency mismatch', {
