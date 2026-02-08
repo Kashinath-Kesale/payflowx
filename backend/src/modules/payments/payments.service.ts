@@ -98,6 +98,10 @@ export class PaymentsService {
   async getPayments(userId: string) {
     return this.prisma.payment.findMany({
       where: { userId },
+      include: {
+        merchant: true,
+        user: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }

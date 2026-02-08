@@ -21,6 +21,18 @@ async function main() {
     },
   });
 
+  await prisma.merchant.upsert({
+    where: { name: 'Walmart' },
+    update: {},
+    create: { name: 'Walmart' },
+  });
+
+  await prisma.merchant.upsert({
+    where: { name: 'Spotify' },
+    update: {},
+    create: { name: 'Spotify' },
+  });
+
   console.log('Seeded data:', { user, merchant });
 }
 

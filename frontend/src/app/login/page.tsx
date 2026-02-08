@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -9,7 +10,10 @@ export default function LoginPage() {
     const router = useRouter();
 
     const handleLogin = async () => {
-        if (!email) return;
+        if (!email) {
+            toast.error("Please enter an email address");
+            return;
+        }
 
         setLoading(true);
 
@@ -22,17 +26,18 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 const err = await res.json();
-                alert(err.message || 'Login failed');
+                toast.error(err.message || 'Login failed');
                 setLoading(false);
                 return;
             }
 
             const data = await res.json();
             localStorage.setItem('token', data.accessToken);
+            toast.success("Login successful");
             router.push('/payments');
         } catch (error) {
             console.error('Login error:', error);
-            alert('Something went wrong. Check console.');
+            toast.error('Something went wrong. Check console.');
         } finally {
             setLoading(false);
         }

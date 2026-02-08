@@ -1,5 +1,5 @@
-export const getToken =() => {
-    if(typeof window === 'undefined') return null;
+export const getToken = () => {
+    if (typeof window === 'undefined') return null;
 
     return localStorage.getItem('token');
 }
@@ -9,7 +9,7 @@ export const isAuthenticated = () => {
 }
 
 
-export const logout = () =>{
+export const logout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/login';
+    // window.location.href = '/login'; // Handled by component for better UX
 }
