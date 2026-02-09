@@ -6,7 +6,7 @@ import { logout } from '../lib/auth';
 import { toast } from "sonner";
 
 const navigation = [
-    { name: 'Dashboard', href: '/' },
+    { name: 'Dashboard', href: '/dashboard' },
     { name: 'Payments', href: '/payments' },
     { name: 'Settlements', href: '/settlements' },
     { name: 'Reconciliation', href: '/reconciliation' },

@@ -34,7 +34,7 @@ export default function LoginPage() {
             const data = await res.json();
             localStorage.setItem('token', data.accessToken);
             toast.success("Login successful");
-            router.push('/payments');
+            router.push('/dashboard');
         } catch (error) {
             console.error('Login error:', error);
             toast.error('Something went wrong. Check console.');
