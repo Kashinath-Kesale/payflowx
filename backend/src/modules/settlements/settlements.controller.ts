@@ -19,12 +19,24 @@ export class SettlementsController {
   async listSettlements() {
     const settled = await this.prisma.settlement.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        payment: {
+          include: {
+            merchant: true,
+            user: true,
+          }
+        }
+      }
     });
 
     const pending = await this.prisma.payment.findMany({
       where: {
         status: 'SUCCESS',
         settlement: null,
+      },
+      include: {
+        merchant: true,
+        user: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -37,6 +49,7 @@ export class SettlementsController {
       status: 'PENDING',
       attemptedAt: null,
       createdAt: p.createdAt,
+      payment: p, // Include full payment object with relations
     }));
 
     return [...settled, ...pendingSettlements].sort(

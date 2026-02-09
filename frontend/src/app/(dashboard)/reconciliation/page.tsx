@@ -7,6 +7,11 @@ import { api } from "@/src/lib/api";
 
 type Row = {
   paymentId: string;
+  merchantName: string;
+  userEmail: string;
+  amount: string;
+  currency: string;
+  date: string;
   status: 'MATCHED' | 'MISMATCHED';
   reason?: string;
 }
@@ -58,6 +63,10 @@ export default function ReconciliationPage() {
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Merchant</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Reason</th>
               </tr>
@@ -66,6 +75,14 @@ export default function ReconciliationPage() {
               {rows.map((r) => (
                 <tr key={r.paymentId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-sm text-gray-500 font-mono">{r.paymentId.slice(0, 8)}…</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{r.merchantName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{r.userEmail}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: r.currency || 'USD' }).format(parseFloat(r.amount))}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {new Date(r.date).toLocaleDateString()}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${r.status === 'MATCHED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
@@ -77,7 +94,7 @@ export default function ReconciliationPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">No reconciliation data. Run analysis to start.</td>
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No reconciliation data. Run analysis to start.</td>
                 </tr>
               )}
             </tbody>

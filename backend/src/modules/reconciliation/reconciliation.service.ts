@@ -11,11 +11,21 @@ export class ReconciliationService {
   async runReconciliation() {
     const payments = await this.prisma.payment.findMany({
       where: { status: 'SUCCESS' },
-      include: { settlement: true },
+      include: {
+        settlement: true,
+        merchant: true,
+        user: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
     const results: {
       paymentId: string;
+      merchantName: string;
+      userEmail: string;
+      amount: string;
+      currency: string;
+      date: Date;
       status: 'MATCHED' | 'MISMATCHED';
       reason?: string;
     }[] = [];
@@ -23,6 +33,14 @@ export class ReconciliationService {
 
     for (const payment of payments) {
       const settlement = payment.settlement;
+      const baseResult = {
+        paymentId: payment.id,
+        merchantName: payment.merchant.name,
+        userEmail: payment.user.email,
+        amount: payment.amount.toString(),
+        currency: payment.currency,
+        date: payment.createdAt,
+      };
 
       if (!settlement) {
         AppLogger.warn('Reconciliation mismatch: missing settlement', {
@@ -34,7 +52,7 @@ export class ReconciliationService {
 
         AppMetrics.increment('reconciliation_mismatched_total');
         results.push({
-          paymentId: payment.id,
+          ...baseResult,
           status: 'MISMATCHED',
           reason: 'Missing settlement',
         });
@@ -51,7 +69,7 @@ export class ReconciliationService {
 
         AppMetrics.increment('reconciliation_mismatched_total');
         results.push({
-          paymentId: payment.id,
+          ...baseResult,
           status: 'MISMATCHED',
           reason: 'Settlement not completed',
         });
@@ -71,7 +89,7 @@ export class ReconciliationService {
 
         AppMetrics.increment('reconciliation_mismatched_total');
         results.push({
-          paymentId: payment.id,
+          ...baseResult,
           status: 'MISMATCHED',
           reason: 'Amount or currency mismatch',
         });
@@ -86,7 +104,7 @@ export class ReconciliationService {
 
       AppMetrics.increment('reconciliation_matched_total');
       results.push({
-        paymentId: payment.id,
+        ...baseResult,
         status: 'MATCHED',
       });
     }

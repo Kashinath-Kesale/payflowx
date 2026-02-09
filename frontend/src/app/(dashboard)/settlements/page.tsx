@@ -12,7 +12,12 @@ type Settlement = {
     attemptedAt: string;
     amount: string;
     currency: string;
-};
+    createdAt: string;
+    payment?: {
+        merchant?: { name: string };
+        user?: { email: string };
+    }
+}
 
 
 export default function SettlementsPage() {
@@ -69,6 +74,8 @@ export default function SettlementsPage() {
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Payment ID</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Merchant</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Processed At</th>
@@ -78,6 +85,8 @@ export default function SettlementsPage() {
                             {rows.map((s) => (
                                 <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">{s.paymentId.slice(0, 8)}...</td>
+                                    <td className="px-6 py-4 text-sm text-gray-900">{s.payment?.merchant?.name || '-'}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">{s.payment?.user?.email || '-'}</td>
                                     <td className="px-6 py-4 text-sm font-medium text-gray-900">₹{parseFloat(s.amount).toLocaleString()}</td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(s.status)}`}>
