@@ -8,11 +8,11 @@ import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email);
+    return this.authService.login(dto);
   }
 
   // TEST PROTECTED ROUTE

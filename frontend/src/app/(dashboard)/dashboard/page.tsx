@@ -25,7 +25,7 @@ export default function Dashboard() {
 
         const total = payments.length;
         const successful = payments.filter((p: Payment) => p.status === 'SUCCESS').length;
-        const pending = payments.filter((p: Payment) => p.status === 'PENDING').length;
+        const pending = payments.filter((p: Payment) => p.status === 'INITIATED').length;
         const revenue = payments
           .filter((p: Payment) => p.status === 'SUCCESS')
           .reduce((acc: number, curr: Payment) => acc + Number(curr.amount), 0);

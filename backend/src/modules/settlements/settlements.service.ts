@@ -6,7 +6,7 @@ import { AppMetrics } from '../../common/metrics/app-metrics';
 
 @Injectable()
 export class SettlementsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async processSettlements() {
     const paymentsToSettle = await this.prisma.payment.findMany({
@@ -17,10 +17,17 @@ export class SettlementsService {
     });
 
     for (const payment of paymentsToSettle) {
+      let settlementAmount = Number(payment.amount);
+
+      // SIMULATION: If amount is 999, deduct 1 to simulate a bank fee mismatch
+      if (settlementAmount === 999) {
+        settlementAmount = settlementAmount - 1;
+      }
+
       const settlement = await this.prisma.settlement.create({
         data: {
           paymentId: payment.id,
-          amount: payment.amount,
+          amount: settlementAmount,
           currency: payment.currency,
           status: 'PENDING',
         },

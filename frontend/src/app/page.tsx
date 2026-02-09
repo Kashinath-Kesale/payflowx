@@ -30,17 +30,11 @@ export default function LandingPage() {
                         <span className="text-xl font-bold tracking-tight">PayFlowX</span>
                     </div>
                     <div className="flex items-center gap-6">
-                        <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">
-                            Documentation
-                        </Link>
-                        <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">
-                            API Reference
-                        </Link>
                         <Link
                             href="/login"
                             className="bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
                         >
-                            Console Login <ArrowRight className="w-4 h-4" />
+                            Sign In <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
                 </div>
@@ -55,12 +49,12 @@ export default function LandingPage() {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-blue-400 mb-8 animate-fade-in-up">
-                        <span className="flex w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-green-400 mb-8 animate-fade-in-up" title="Real-time system status indicator">
+                        <span className="flex w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         System Operational • v2.4.0 Live
                     </div>
 
-                    <h1 className="text-6xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 leading-tight">
                         Financial Infrastructure <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
                             Built for Scale
@@ -76,11 +70,8 @@ export default function LandingPage() {
                             href="/login"
                             className="h-12 px-8 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-500 transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                         >
-                            Launch Dashboard
+                            Get Started
                         </Link>
-                        <button className="h-12 px-8 rounded-full bg-white/5 text-white border border-white/10 hover:bg-white/10 transition-all">
-                            Read Architecture Spec
-                        </button>
                     </div>
                 </div>
             </section>
@@ -99,31 +90,31 @@ export default function LandingPage() {
                             <div className="w-12 h-12 bg-blue-900/30 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Lock className="w-6 h-6 text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-3">Idempotent Transactions</h3>
+                            <h3 className="text-xl font-semibold mb-3">Idempotency Engine</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">
-                                Guaranteed exactly-once processing using distributed locks (Redis) and idempotent keys. Eliminates double-spending risks in high-concurrency environments.
+                                Prevents double-spending using unique keys. Validates every request against existing records to ensure exactly-once processing.
                             </p>
                         </div>
 
-                        {/* Feature 2: Reconciliation */}
+                        {/* Feature 2: Reconciliation & Settlements */}
                         <div className="group p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:bg-white/[0.07]">
                             <div className="w-12 h-12 bg-purple-900/30 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <ShieldCheck className="w-6 h-6 text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-3">Automated Reconciliation</h3>
+                            <h3 className="text-xl font-semibold mb-3">Reconciliation & Settlements</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">
-                                Three-way matching engine compares Gateway logs, Bank statements, and Internal ledgers to detect discrepancies instantly.
+                                Unified ledger tracking payments from initiation to final settlement. Automatically attempts settlement for successful payments and audits the lifecyle.
                             </p>
                         </div>
 
-                        {/* Feature 3: Scalable Infra */}
+                        {/* Feature 3: Structured Logging */}
                         <div className="group p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-green-500/50 transition-all duration-300 hover:bg-white/[0.07]">
                             <div className="w-12 h-12 bg-green-900/30 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                                 <Server className="w-6 h-6 text-green-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-3">Event-Driven Architecture</h3>
+                            <h3 className="text-xl font-semibold mb-3">Structured Logging</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">
-                                Built on NestJS Microservices. Asynchronous processing for settlements and notifications ensures main thread availability and high throughput.
+                                Production-ready JSON logging with context propagation. Captures correlation IDs, service labels, and error stacks for full observability.
                             </p>
                         </div>
                     </div>
@@ -138,22 +129,16 @@ export default function LandingPage() {
                         <TechBadge name="Next.js 14" />
                         <TechBadge name="NestJS" />
                         <TechBadge name="PostgreSQL" />
-                        <TechBadge name="Redis" />
+                        <TechBadge name="Prisma" />
                         <TechBadge name="TypeScript" />
-                        <TechBadge name="Docker" />
                     </div>
                 </div>
             </section>
 
             {/* Footer */}
             <footer className="py-12 border-t border-white/10">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-gray-500 text-sm">
-                    <p>&copy; 2024 PayFlowX. All rights reserved.</p>
-                    <div className="flex gap-6 mt-4 md:mt-0">
-                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                        <a href="#" className="hover:text-white transition-colors">Terms</a>
-                        <a href="#" className="hover:text-white transition-colors">Status</a>
-                    </div>
+                <div className="max-w-7xl mx-auto px-6 flex justify-center text-gray-500 text-sm">
+                    <p>&copy; 2026 PayFlowX. All rights reserved.</p>
                 </div>
             </footer>
         </div>

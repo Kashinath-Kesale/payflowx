@@ -11,5 +11,4 @@ export const isAuthenticated = () => {
 
 export const logout = () => {
     localStorage.removeItem('token');
-    // window.location.href = '/login'; // Handled by component for better UX
 }

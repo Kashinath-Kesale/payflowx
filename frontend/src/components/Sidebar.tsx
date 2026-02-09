@@ -19,7 +19,7 @@ export default function Sidebar() {
     const handleLogout = () => {
         logout(); // clear token
         toast.success("Logged out successfully");
-        router.push('/login');
+        router.push('/');
     };
 
     return (
