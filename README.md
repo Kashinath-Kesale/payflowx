@@ -171,12 +171,6 @@ The frontend acts as a **reporting and visualization layer**:
 * View settlements (read-only)
 * View reconciliation results (MATCHED / MISMATCHED)
 
-### Design Choice
-
-* Frontend **never triggers settlements**
-* All financial processing remains backend-controlled
-* UI only reflects system state
-
 ---
 
 ## 🛠️ Setup & Running Locally
@@ -229,7 +223,7 @@ In a **production system**:
 
 ---
 
-## 🎯 Interview Highlights
+## � Key Takeaways & Core Competencies
 
 This project demonstrates:
 
