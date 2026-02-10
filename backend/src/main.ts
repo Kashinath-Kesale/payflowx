@@ -13,7 +13,11 @@ async function bootstrap() {
     transform: true
   }))
 
-  app.enableCors();
+  app.enableCors({
+    origin: '*', // Allow all origins for initial deployment (Update this to Vercel URL later)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
