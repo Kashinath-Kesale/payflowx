@@ -1,123 +1,259 @@
+---
 
-# 💸 PayFlowX - Payment Reconciliation System
+# 💸 PayFlowX — Payment Processing, Settlement & Reconciliation System
 
-> **A robust, full-stack payment reconciliation platform built with modern web technologies.**
+> **A backend-heavy, full-stack financial system that models real-world payment flows with correctness, reliability, and auditability as first-class concerns.**
 
-PayFlowX is a financial dashboard designed to simulate and manage the **lifecycle of digital payments**, from initiation to settlement and final reconciliation. It ensures **data integrity** between payment gateways and bank settlements, highlighting discrepancies for manual review.
+PayFlowX simulates the **end-to-end lifecycle of digital payments** — from payment initiation to asynchronous settlement and final reconciliation.
+The system is designed to highlight **financial correctness**, **failure safety**, and **clear separation of responsibilities**, which are critical in real payment platforms.
 
 ---
 
 ## 🚀 Tech Stack
 
-### **Backend** (Robust & Scalable)
--   **Framework**: 🦁 [NestJS](https://nestjs.com/) (Modular, rigid architecture)
--   **Language**: 🟦 **TypeScript** (End-to-end type safety)
--   **Database**: 🐘 **PostgreSQL**
--   **ORM**: 💎 **Prisma** (Type-safe database access)
--   **Authentication**: 🔐 **JWT** (JSON Web Tokens) with Passport strategy
--   **Logging**: 📜 Custom **AppLogger** for structured logging
+### Backend
 
-### **Frontend** (Responsive & Interactive)
--   **Framework**: ⚛️ [Next.js 14](https://nextjs.org/) (App Router)
--   **Styling**: 🎨 **Tailwind CSS** (Utility-first design)
--   **State Management**: 🎣 **React Context & Hooks**
--   **Data Fetching**: 🌐 Native **Fetch API** with typed responses
+* **Framework**: NestJS (modular, opinionated architecture)
+* **Language**: TypeScript (strict typing)
+* **Database**: PostgreSQL
+* **ORM**: Prisma (type-safe DB access)
+* **Authentication**: JWT (Passport strategy)
+* **Logging**: Structured logging via custom `AppLogger`
 
----
+### Frontend
 
-## 🧠 Technical Deep Dive (Architecture & Design)
-
-This project implements several advanced backend patterns to ensure reliability and correctness, which are critical in financial systems.
-
-### 1. **Problem Definition & Scope Lock** 🎯
-The core problem is **Data Consistency**. Financial systems often face "split-brain" scenarios where a payment gateway says "Success" but the bank says "Pending" or "Failed". **PayFlowX acts as the source of truth** by reconciling these two asynchronous streams of data in real-time.
-
-### 2. **Payment Flow Design** 🔄
-The payment lifecycle is strictly defined to ensure predictability:
-1.  **Initiation**: Client requests a payment.
-2.  **Idempotency Check**: Server checks if this request has already been processed to prevent duplicates.
-3.  **Validation**: Merchant status and user limits are rigorously validated.
-4.  **Processing**: Payment is recorded as `INITIATED`.
-5.  **Finalization**: Status is atomically updated to `SUCCESS` or `FAILED` based on the gateway response.
-
-### 3. **Database Schema Design** 🗄️
-The schema (`schema.prisma`) is normalized to **3NF** where possible:
--   **Users/Merchants**: Core operational entities.
--   **Payments**: Linked to User and Merchant. Contains `idempotencyKey` (Unique Constraint).
--   **Settlements**: **One-to-One** relation with Payments. Separated intentionally to mimic real-world asynchronous bank feeds.
-
-### 4. **Idempotency Strategy** 🔁
-To prevent **double-charging** (e.g., user clicks "Pay" twice), every payment request requires a unique `idempotencyKey`.
--   **Implementation**: Before creating a payment, the `PaymentsService` checks `prisma.payment.findUnique({ where: { idempotencyKey } })`.
--   **Result**: If found, the existing payment object is returned immediately without re-processing, ensuring **safe retries**.
-
-### 5. **Transaction State Machine** 🚦
-Payments follow a rigid state machine enforced by the `PaymentStatus` enum:
--   `INITIATED`: Created but not finalized.
--   `SUCCESS`: Verified and capture confirmed.
--   `FAILED`: Error occurred (insufficient funds, system error).
-
-*State transitions are strictly controlled within the `PaymentsService` to preventing invalid states.*
-
-### 6. **Database Transaction Handling** ⚛️
-All financial operations must be **atomic**.
--   **Implementation**: We utilize `prisma.$transaction`.
--   **Logic**: The creation of the `INITIATED` record and the subsequent update to `SUCCESS`/`FAILED` happen within a **single managed transaction** scope to ensure data integrity.
-
-### 7. **Failure & Retry Handling** 🛡️
--   **Graceful Failures**: All external calls (simulated) are wrapped in robust `try-catch` blocks.
--   **Status Updates**: If a process fails, the entity is explicitly marked `FAILED` with a detailed `failureReason` stored in the database for auditing and debugging.
-
-### 8. **Settlement & Reconciliation Logic** ⚖️
--   **Settlement**: An async background process (`SettlementsService`) scans for `SUCCESS` payments and creates settlement records.
--   **Reconciliation**: A separate **audit process** compares `Payment.amount` vs `Settlement.amount`. Mismatches (e.g., fee deductions) are flagged as `MISMATCHED` in the dashboard with specific error codes.
-
-### 9. **Indexing & Performance Optimization** ⚡
--   **Indexes**: Added `@@index` on high-cardinality fields like `userId`, `merchantId`, and `status` in the `Payment` model.
--   **Impact**: Significantly speeds up dashboard filtering and reporting queries on large datasets.
+* **Framework**: Next.js 14 (App Router)
+* **Styling**: Tailwind CSS
+* **State Handling**: React Hooks
+* **Data Fetching**: Native Fetch API
+* **Auth Handling**: JWT-based protected routes
 
 ---
 
-## 🛠️ Setup & Running
+## 🧠 System Overview & Design Philosophy
 
-1.  **Clone the repository**
+### Core Problem
 
-2.  **Install Dependencies**:
-    ```bash
-    npm install
-    ```
+Financial systems often face **eventual consistency issues**, where:
 
-3.  **Setup Environment**:
-    -   Configure `.env` with `DATABASE_URL` and `JWT_SECRET`.
+* A payment appears successful at the gateway
+* But settlement or bank confirmation happens later
 
-4.  **Database Seeding**:
-    The project includes a seed script to populate initial users, merchants, and transactions.
-    ```bash
-    npx prisma db seed
-    ```
+PayFlowX addresses this by:
 
-5.  **Run Backend**:
-    ```bash
-    cd backend
-    npx prisma migrate dev
-    npm run start:dev
-    ```
-
-6.  **Run Frontend**:
-    ```bash
-    cd frontend
-    npm run dev
-    ```
+* Separating **payment intent**, **settlement**, and **reconciliation**
+* Treating reconciliation as the **source of truth** for financial correctness
 
 ---
 
-## 🧪 Technical Highlights
+## 🔄 Payment Lifecycle Design
 
--   **Separation of Concerns**: Strict boundary between "Payment Ingestion" (High throughput) and "Reconciliation Logic" (High accuracy).
--   **Error Handling**: Centralized error handling and detailed logging for debugging production issues.
--   **Type Safety**: Shared DTOs and strict TypeScript configuration to prevent runtime errors.
--   **Data Integrity**: The reconciliation logic is designed to be the "source of truth", catching edge cases like dropped webhooks or failed settlement jobs.
+### 1. Payment Ingestion
+
+* Client initiates a payment request
+* Request must include a unique `idempotencyKey`
+
+### 2. Idempotency Enforcement
+
+* Duplicate requests are safely handled
+* If a payment with the same `idempotencyKey` exists, it is returned immediately
+* Prevents double-charging and retry-related inconsistencies
+
+### 3. Payment States
+
+Payments follow a strict state machine:
+
+* `INITIATED` — payment intent recorded
+* `SUCCESS` — payment confirmed
+* `FAILED` — error occurred (with failure reason)
+
+State transitions are controlled **only within the service layer**.
+
+---
+
+## 🗄️ Database Design
+
+### Core Models
+
+* **Users** — system users
+* **Merchants** — payment receivers (validated before processing)
+* **Payments**
+
+  * Linked to User & Merchant
+  * Contains `idempotencyKey` (unique constraint)
+  * Immutable after terminal state
+* **Settlements**
+
+  * One-to-one relationship with Payments
+  * Created asynchronously
+* **Reconciliation Results**
+
+  * Derived by comparing Payments and Settlements
+
+### Design Rationale
+
+* Separation of tables mirrors real payment systems
+* Prevents mixing real-time operations with batch processes
+* Improves auditability and reasoning
+
+---
+
+## 🔁 Idempotency Strategy
+
+* Idempotency is enforced at the **database level**
+* Ensures:
+
+  * Safe retries
+  * No duplicate records
+  * Consistent responses under network failures
+
+This mirrors real-world payment gateway behavior.
+
+---
+
+## ⚛️ Transaction & Atomicity Handling
+
+* Critical operations are wrapped in `prisma.$transaction`
+* Guarantees:
+
+  * Atomic writes
+  * No partial state persistence
+  * Strong consistency during payment processing
+
+---
+
+## 🛡️ Failure Handling & Observability
+
+* All failures are explicitly captured
+* `FAILED` records include a `failureReason`
+* Structured logs record:
+
+  * Payment lifecycle events
+  * Settlement attempts
+  * Reconciliation outcomes
+
+This enables debugging and auditing without manual DB inspection.
+
+---
+
+## ⚖️ Settlement & Reconciliation
+
+### Settlement
+
+* Executed asynchronously via a backend job
+* Scans successful payments
+* Creates settlement records independently
+
+### Reconciliation
+
+* A read-only audit process
+* Compares:
+
+  * Payment amount & currency
+  * Settlement amount & currency
+* Produces:
+
+  * `MATCHED`
+  * `MISMATCHED` (with reason)
+
+This models real-world accounting verification flows.
+
+---
+
+## ⚡ Performance & Indexing
+
+* Indexes applied on frequently queried fields:
+
+  * `userId`
+  * `merchantId`
+  * `status`
+  * `idempotencyKey`
+* Ensures fast dashboard queries and scalable reads
+
+---
+
+## 🖥️ Frontend Dashboard
+
+The frontend acts as a **reporting and visualization layer**:
+
+### Features
+
+* JWT-based login
+* Create payments
+* View payment statuses
+* View settlements (read-only)
+* View reconciliation results (MATCHED / MISMATCHED)
+
+### Design Choice
+
+* Frontend **never triggers settlements**
+* All financial processing remains backend-controlled
+* UI only reflects system state
+
+---
+
+## 🛠️ Setup & Running Locally
+
+### Backend
+
+```bash
+cd backend
+npm install
+npx prisma migrate dev
+npm run start:dev
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Environment Variables
+
+```env
+DATABASE_URL=postgresql://...
+JWT_SECRET=your_secret
+```
+
+---
+
+## ⚠️ Known Limitations
+
+* Authentication is simplified (email-only login)
+* No external payment gateway integration (logic simulated)
+* Settlement job is manually triggered for demo purposes
+* Rate limiting and queues are discussed but not implemented
+
+These choices are intentional to focus on **system design and correctness**.
+
+---
+
+## 🏗️ Production Considerations
+
+In a production system:
+
+* Settlement would be triggered via scheduled background workers
+* Authentication would integrate with an identity provider
+* Rate limiting would be enforced at the API gateway
+* Message queues could decouple settlement processing further
+
+---
+
+## 🎯 Interview Highlights
+
+This project demonstrates:
+
+* Strong domain modeling
+* Correct handling of retries and failures
+* Clear separation of concerns
+* Practical understanding of financial systems
+* Ability to reason about scale and correctness
 
 ---
 
 *Built with ❤️ by Kashinath Kesale*
+
+---
