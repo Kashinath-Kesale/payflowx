@@ -1,5 +1,3 @@
----
-
 # 💸 PayFlowX — Payment Processing, Settlement & Reconciliation System
 
 > **A backend-heavy, full-stack financial system that models real-world payment flows with correctness, reliability, and auditability as first-class concerns.**
