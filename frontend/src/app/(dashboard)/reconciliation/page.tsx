@@ -48,13 +48,13 @@ export default function ReconciliationPage() {
               disabled={loading}
               className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
             >
-              <span>{loading ? 'Running Analysis...' : 'Run Analysis'}</span>
+              <span>{loading ? 'Refreshing Analysis...' : 'Refresh Analysis'}</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
             </button>
             <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-gray-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-              Triggers a full system audit to compare every Payment against its Settlement. Mismatches (e.g. missing settlements) are flagged for review.
+              Refreshes the reconciliation data by comparing the latest payments and settlements. Useful for seeing immediate updates.
             </div>
           </div>        </div>
 
@@ -94,7 +94,7 @@ export default function ReconciliationPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No reconciliation data. Run analysis to start.</td>
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No reconciliation data. Refresh analysis to check for updates.</td>
                 </tr>
               )}
             </tbody>

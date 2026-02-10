@@ -43,6 +43,15 @@ export class ReconciliationService {
       };
 
       if (!settlement) {
+        if (payment.status === 'SUCCESS') {
+          results.push({
+            ...baseResult,
+            status: 'MISMATCHED',
+            reason: 'Settlement Pending',
+          });
+          continue;
+        }
+
         AppLogger.warn('Reconciliation mismatch: missing settlement', {
           service: 'reconciliation',
           action: 'missing_settlement',
