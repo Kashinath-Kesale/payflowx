@@ -89,7 +89,7 @@ The project follows a **Microservices-ready Monolith** architecture using NestJS
 
 ---
 
-## 🧪 Technical Highlights (For Interviewers)
+## 🧪 Technical Highlights 
 -   **Separation of Concerns**: Strict boundary between "Payment Ingestion" and "Reconciliation Logic".
 -   **Error Handling**: Centralized error handling and detailed logging for debugging production issues.
 -   **Type Safety**: Shared DTOs (implied) and strict TypeScript configuration to prevent runtime errors.
@@ -97,4 +97,4 @@ The project follows a **Microservices-ready Monolith** architecture using NestJS
 
 ---
 
-*Built with ❤️ by Arjun Kesale*
+*Built with ❤️ by Kashinath Kesale*
