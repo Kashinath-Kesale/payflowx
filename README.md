@@ -104,4 +104,15 @@ Financial operations must be atomic.
 
 ---
 
+<<<<<<< HEAD
+=======
+## 🧪 Technical Highlights 
+-   **Separation of Concerns**: Strict boundary between "Payment Ingestion" and "Reconciliation Logic".
+-   **Error Handling**: Centralized error handling and detailed logging for debugging production issues.
+-   **Type Safety**: Shared DTOs (implied) and strict TypeScript configuration to prevent runtime errors.
+-   **Data Integrity**: The reconciliation logic is designed to be the "source of truth", catching edge cases like dropped webhooks or failed settlement jobs.
+
+---
+
+>>>>>>> f84c9d28a1b112cd854b5be18949421119458bc4
 *Built with ❤️ by Kashinath Kesale*
