@@ -86,12 +86,6 @@ State transitions are controlled **only within the service layer**.
 *   ⚖️ **Reconciliation Results**:
     *   Derived audit records comparing Payments vs. Settlements.
 
-### Design Rationale
-
-*   **Intentional Separation**: Payments and Settlements are modeled independently to reflect real-world authorization vs settlement flows.
-*   **Performance**: Prevents mixing real-time OLTP operations (Payments) with heavy batch processing (Settlements).
-*   **Auditability**: Keeps a clean history of *what we thought happened* (Payment) vs. *what the bank said happened* (Settlement).
-
 ---
 
 ## 🔁 Idempotency Strategy
