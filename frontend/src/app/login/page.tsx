@@ -42,7 +42,7 @@ export default function LoginPage() {
             router.push('/dashboard');
         } catch (error) {
             console.error('Login error:', error);
-            toast.error('Something went wrong. Check console.');
+            toast.error('Something went wrong.');
         } finally {
             setLoading(false);
         }
