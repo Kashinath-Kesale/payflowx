@@ -111,7 +111,7 @@ All financial operations must be **atomic**.
 
 ---
 
-## 🧪 Technical Highlights (Interview Focus)
+## 🧪 Technical Highlights
 
 -   **Separation of Concerns**: Strict boundary between "Payment Ingestion" (High throughput) and "Reconciliation Logic" (High accuracy).
 -   **Error Handling**: Centralized error handling and detailed logging for debugging production issues.
