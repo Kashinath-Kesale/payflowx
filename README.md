@@ -25,44 +25,54 @@ PayFlowX is a financial dashboard designed to simulate and manage the lifecycle 
 
 ---
 
-## 🌟 Key Features Implemented
+## 🧠 Technical Deep Dive (Architecture & Design)
 
-### 1. **Authentication & Security** 🔐
--   **Secure Login**: Implemented JWT-based authentication.
--   **Protected Routes**: Backend `JwtAuthGuard` ensures only authenticated requests access sensitive financial data.
--   **Password Hashing**: User passwords are securely hashed (bcrypt) before storage.
+This project implements several advanced backend patterns to ensure reliability and correctness, which are critical in financial systems.
 
-### 2. **Payment Processing Engine** 💳
--   **Transaction Lifecycle**: simulating the flow of payments from `INITIATED` to `SUCCESS` or `FAILED`.
--   **Database Consistency**: Uses Prisma transactions (implicit where applicable) to ensure data validity.
+### 1. **Problem Definition & Scope Lock** 🎯
+The core problem is **Data Consistency**. Financial systems often face "split-brain" scenarios where a payment gateway says "Success" but the bank says "Pending" or "Failed". PayFlowX acts as the source of truth by reconciling these two asynchronous streams of data.
 
-### 3. **Settlement Management** 🏦
--   **Automated Settlements**: Logic to simulate bank settlement processes for successful payments.
--   **Status Tracking**: Tracks settlement states: `PENDING` -> `SETTLED` or `FAILED`.
--   **Batch Processing**: Endpoint `internal/settlements/process` designed to handle bulk settlement updates.
+### 2. **Payment Flow Design** �
+The payment lifecycle is strictly defined:
+1.  **Initiation**: Client requests a payment.
+2.  **Idempotency Check**: Server checks if this request has already been processed.
+3.  **Validation**: Merchant status and user limits are validated.
+4.  **Processing**: Payment is recorded as `INITIATED`.
+5.  **Finalization**: Status updates to `SUCCESS` or `FAILED` based on gateway response (simulated).
 
-### 4. **Smart Reconciliation System** ⚖️
--   **Automated Matching**: Compares `Payments` against `Settlements` based on unique IDs, Amounts, and Currencies.
--   **Discrepancy Detection**:
-    -   **Missing Settlement**: Identifies payments that claim to be successful but have no corresponding bank settlement.
-    -   **Pending Settlements**: Smartly distinguishes between "Missing" (Error) and "Pending" (In Progress) settlements to reduce false alarms.
-    -   **Amount Mismatch**: Flags transactions where the payment amount differs from the settled amount (e.g., hidden fees).
+### 3. **Database Schema Design** 🗄️
+The schema (`schema.prisma`) is normalized to 3NF where possible:
+-   **Users/Merchants**: Core entities.
+-   **Payments**: Linked to User and Merchant. Contains `idempotencyKey` (Unique).
+-   **Settlements**: One-to-One relation with Payments. Separated to mimic real-world asynchronous bank feeds.
 
-### 5. **Interactive Dashboard** 📊
--   **Real-time Insights**: View total volume, reconciliation status, and settlement health.
--   **Drill-down Tables**: Detailed views for Settlements and Reconciliation discrepancies.
--   **User Experience**: Polished UI with loading states, error handling, and responsive navigation.
+### 4. **Idempotency Strategy** 🔁
+To prevent double-charging (e.g., user clicks "Pay" twice), every payment request requires a unique `idempotencyKey`.
+-   **Implementation**: Before creating a payment, the `PaymentsService` checks `prisma.payment.findUnique({ where: { idempotencyKey } })`.
+-   **Result**: If found, the existing payment object is returned immediately without re-processing, ensuring safe retries.
 
----
+### 5. **Transaction State Machine** 🚦
+Payments follow a rigid state machine enforced by the `PaymentStatus` enum:
+-   `INITIATED`: Created but not finalized.
+-   `SUCCESS`: Verified and capture confirmed.
+-   `FAILED`: Error occurred (insufficient funds, system error).
+*Transitions are strictly controlled within the `PaymentsService`.*
 
-## 🏗️ System Architecture
+### 6. **Database Transaction Handling** ⚛️
+Financial operations must be atomic.
+-   **Implementation**: used `prisma.$transaction`.
+-   **Logic**: The creation of the `INITIATED` record and the subsequent update to `SUCCESS`/`FAILED` happen within a managed transaction scope to ensure data integrity.
 
-The project follows a **Microservices-ready Monolith** architecture using NestJS modules:
+### 7. **Failure & Retry Handling** 🛡️
+-   **Graceful Failures**: All external calls (simulated) are wrapped in `try-catch` blocks.
+-   **Status Updates**: If a process fails, the entity is explicitly marked `FAILED` with a `failureReason` stored in the database for auditing.
 
--   **Auth Module**: Handles user identity and token issuance.
--   **Payments Module**: Core logic for accepting and recording transactions.
--   **Settlements Module**: Asynchronous processing of payment settlements.
--   **Reconciliation Module**: The "Audit" layer that cross-references data between Payments and Settlements to ensure financial accuracy.
+### 8. **Settlement & Reconciliation Logic** ⚖️
+-   **Settlement**: An async background process (`SettlementsService`) scans for `SUCCESS` payments and creates settlement records.
+-   **Reconciliation**: A separate audit process compares `Payment.amount` vs `Settlement.amount`. Mismatches (e.g., fee deductions) are flagged as `MISMATCHED` in the dashboard.
+
+### 9. **Indexing & Performance Optimization** ⚡
+-   **Indexes**: Added `@@index` on high-cardinality fields like `userId`, `merchantId`, and `status` in the `Payment` model to speed up dashboard filtering and reporting queries.
 
 ---
 
@@ -75,13 +85,18 @@ The project follows a **Microservices-ready Monolith** architecture using NestJS
     ```
 3.  **Setup Environment**:
     -   Configure `.env` with `DATABASE_URL` and `JWT_SECRET`.
-4.  **Run Backend**:
+4.  **Database Seeding**:
+    The project includes a seed script to populate initial users, merchants, and transactions.
+    ```bash
+    npx prisma db seed
+    ```
+5.  **Run Backend**:
     ```bash
     cd backend
-    request npx prisma migrate dev
+    npx prisma migrate dev
     npm run start:dev
     ```
-5.  **Run Frontend**:
+6.  **Run Frontend**:
     ```bash
     cd frontend
     npm run dev
@@ -89,12 +104,4 @@ The project follows a **Microservices-ready Monolith** architecture using NestJS
 
 ---
 
-## 🧪 Technical Highlights (For Interviewers)
--   **Separation of Concerns**: Strict boundary between "Payment Ingestion" and "Reconciliation Logic".
--   **Error Handling**: Centralized error handling and detailed logging for debugging production issues.
--   **Type Safety**: Shared DTOs (implied) and strict TypeScript configuration to prevent runtime errors.
--   **Data Integrity**: The reconciliation logic is designed to be the "source of truth", catching edge cases like dropped webhooks or failed settlement jobs.
-
----
-
-*Built with ❤️ by Arjun Kesale*
+*Built with ❤️ by Kashinath Kesale*
