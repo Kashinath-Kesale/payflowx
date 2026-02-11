@@ -14,7 +14,7 @@ async function bootstrap() {
   }))
 
   app.enableCors({
-    origin: '*', // Allow all origins for initial deployment (Update this to Vercel URL later)
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

@@ -51,7 +51,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-green-400 mb-8 animate-fade-in-up" title="Real-time system status indicator">
                         <span className="flex w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        System Operational • v2.4.0 Live
+                        System Operational • Demo Environment
                     </div>
 
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 leading-tight">
@@ -62,7 +62,7 @@ export default function LandingPage() {
                     </h1>
 
                     <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Enterprise-grade payment orchestration with automated reconciliation, idempotent processing, and real-time settlement tracking.
+                        Enterprise-grade payment orchestration with idempotent processing, asynchronous settlement handling, and auditable reconciliation.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -126,11 +126,11 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <p className="text-sm font-medium text-gray-500 mb-8 uppercase tracking-widest">Powered By Modern Stack</p>
                     <div className="flex flex-wrap justify-center items-center gap-12 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
-                        <TechBadge name="Next.js 14" />
-                        <TechBadge name="NestJS" />
-                        <TechBadge name="PostgreSQL" />
-                        <TechBadge name="Prisma" />
-                        <TechBadge name="TypeScript" />
+                        <TechBadge name="Next.js 14" color="text-white" />
+                        <TechBadge name="NestJS" color="text-red-600" />
+                        <TechBadge name="PostgreSQL" color="text-blue-400" />
+                        <TechBadge name="Prisma" color="text-cyan-400" />
+                        <TechBadge name="TypeScript" color="text-blue-500" />
                     </div>
                 </div>
             </section>
@@ -145,11 +145,11 @@ export default function LandingPage() {
     );
 }
 
-function TechBadge({ name }: { name: string }) {
+function TechBadge({ name, color }: { name: string; color: string }) {
     return (
         <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-white/20"></div>
-            <span className="text-lg font-semibold text-white">{name}</span>
+            <div className={`w-2 h-2 rounded-full bg-current ${color}`}></div>
+            <span className={`text-lg font-semibold ${color}`}>{name}</span>
         </div>
     )
 }

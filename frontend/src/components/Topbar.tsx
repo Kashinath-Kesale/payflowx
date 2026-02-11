@@ -1,7 +1,9 @@
 'use client';
 
-import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, LogOut } from "lucide-react";
+import { logout } from "../lib/auth";
+import { toast } from "sonner";
 
 interface TopbarProps {
     onMenuClick: () => void;
@@ -9,16 +11,21 @@ interface TopbarProps {
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
     const pathname = usePathname();
+    const router = useRouter();
 
-    // Map pathnames to titles
     const getTitle = () => {
         if (pathname === '/') return 'Dashboard';
 
-        // Remove leading slash and capitalize first letter
         const path = pathname.split('/')[1];
         if (!path) return 'Dashboard';
 
         return path.charAt(0).toUpperCase() + path.slice(1);
+    };
+
+    const handleLogout = () => {
+        logout();
+        toast.success("Logged out successfully");
+        router.push('/');
     };
 
     return (
@@ -34,8 +41,13 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             </div>
 
             <div className="flex items-center space-x-4">
-                <div className="h-8 w-8 rounded-full bg-gray-200"></div>
-                {/* Add user profile / dropdown later */}
+                <button
+                    onClick={handleLogout}
+                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition-colors rounded-full"
+                    title="Logout"
+                >
+                    <LogOut className="w-5 h-5" />
+                </button>
             </div>
         </header>
     );

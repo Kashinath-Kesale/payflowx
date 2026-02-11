@@ -109,16 +109,17 @@ export default function PaymentsPage() {
     return (
         <ProtectedRoute>
             <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+                <div className="flex flex-col mb-8">
+                    <h1 className="text-2xl font-bold text-gray-900">Transaction Management</h1>
+                    <p className="text-gray-500 mt-1">Create new payments and view transaction history.</p>
                 </div>
 
                 {/* Create Payment Card */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
                     <h2 className="text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wider">Create New Payment</h2>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <select
-                            className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                            className="w-full sm:flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
                             value={merchantId}
                             onChange={(e) => setMerchantId(e.target.value)}
                         >
@@ -134,14 +135,14 @@ export default function PaymentsPage() {
                             placeholder="Amount (₹)"
                             type="number"
                             min="1"
-                            className="w-48 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            className="w-full sm:w-48 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />
                         <button
                             onClick={createPayment}
                             disabled={loading}
-                            className="bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            className="w-full sm:w-auto bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
                         >
                             {loading ? 'Processing...' : 'Create Payment'}
                         </button>

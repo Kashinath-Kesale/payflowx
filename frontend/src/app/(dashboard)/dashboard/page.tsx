@@ -49,7 +49,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Financial Overview</h1>
+      <p className="text-gray-500 mt-1 mb-6">Real-time insights into your payment flows.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Revenue Card */}
