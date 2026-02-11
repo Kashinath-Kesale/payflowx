@@ -23,7 +23,7 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="flex h-full w-64 flex-col bg-gray-900 px-4 py-8 text-white">
+        <div className="hidden md:flex h-full w-64 flex-col bg-gray-900 px-4 py-8 text-white">
             <div className="mb-8 px-2">
                 <h1 className="text-2xl font-bold">PayFlowX</h1>
             </div>

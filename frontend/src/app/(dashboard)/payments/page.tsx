@@ -149,7 +149,7 @@ export default function PaymentsPage() {
                 </div>
 
                 {/* Payments Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>

@@ -1,8 +1,13 @@
 'use client';
 
 import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
 
-export default function Topbar() {
+interface TopbarProps {
+    onMenuClick: () => void;
+}
+
+export default function Topbar({ onMenuClick }: TopbarProps) {
     const pathname = usePathname();
 
     // Map pathnames to titles
@@ -17,8 +22,17 @@ export default function Topbar() {
     };
 
     return (
-        <header className="flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-8">
-            <h2 className="text-xl font-semibold text-gray-800">{getTitle()}</h2>
+        <header className="flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={onMenuClick}
+                    className="md:hidden p-2 -ml-2 rounded-md hover:bg-gray-100 text-gray-600"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+                <h2 className="text-xl font-semibold text-gray-800">{getTitle()}</h2>
+            </div>
+
             <div className="flex items-center space-x-4">
                 <div className="h-8 w-8 rounded-full bg-gray-200"></div>
                 {/* Add user profile / dropdown later */}
