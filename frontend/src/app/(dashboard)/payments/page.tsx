@@ -90,8 +90,8 @@ export default function PaymentsPage() {
             // Refresh payments only
             const refreshedPayments = await api<Payment[]>('/payments');
             setPayments(refreshedPayments);
-        } catch (error) {
-            toast.error("Failed to create payment");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to create payment");
         } finally {
             setLoading(false);
         }
