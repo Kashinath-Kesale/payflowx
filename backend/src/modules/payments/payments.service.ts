@@ -7,7 +7,9 @@ import { AppMetrics } from '../../common/metrics/app-metrics';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+  ) { }
 
   async createPayment(userId: string, dto: CreatePaymentDto) {
     // 1. Idempotency check
@@ -70,6 +72,8 @@ export class PaymentsService {
         });
 
         AppMetrics.increment('payments_success_total');
+        
+
         return completedPayment;
       } catch (error) {
         const failedPayment = await tx.payment.update({
@@ -96,7 +100,7 @@ export class PaymentsService {
     });
   }
   async getPayments(userId: string) {
-    return this.prisma.payment.findMany({
+    const payments = await this.prisma.payment.findMany({
       where: { userId },
       include: {
         merchant: true,
@@ -104,5 +108,7 @@ export class PaymentsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return payments;
   }
 }

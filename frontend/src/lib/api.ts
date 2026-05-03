@@ -1,4 +1,5 @@
 import { getToken } from './auth';
+import { toast } from 'sonner';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,7 +20,14 @@ export async function api<T>(
 
 
     if (!res.ok) {
-        const err = await res.json();
+        if (res.status === 429) {
+            if (typeof window !== 'undefined') {
+                toast.error('You are doing that too fast. Please wait a minute.');
+            }
+            throw new Error('Rate limit exceeded');
+        }
+
+        const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Request failed');
     }
 

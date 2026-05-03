@@ -1,6 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { HealthController } from './health.controller';
 import { UsersModule } from './modules/users/users.module';
@@ -15,6 +17,10 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     PrismaModule,
     UsersModule,
     MerchantsModule,
@@ -23,6 +29,13 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
     SettlementsModule,
   ],
   controllers: [HealthController, ReconciliationController],
-  providers: [SettlementsService, ReconciliationService],
+  providers: [
+    SettlementsService, 
+    ReconciliationService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }

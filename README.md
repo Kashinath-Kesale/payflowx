@@ -18,6 +18,7 @@ The system is designed to highlight **financial correctness**, **failure safety*
 *   💎 **ORM**: Prisma (type-safe DB access)
 *   🔐 **Authentication**: JWT (Passport strategy)
 *   📜 **Logging**: Structured logging via custom `AppLogger`
+*   📄 **API Docs**: Swagger OpenAPI (Live: [https://payflowx-backend.onrender.com/api](https://payflowx-backend.onrender.com/api))
 
 ### Frontend
 
@@ -112,6 +113,15 @@ All financial operations must be **Atomic** to ensure data integrity.
 
 ---
 
+## 🚧 Global Rate Limiting (Security & UX)
+
+To protect the system from malicious actors, brute-force attacks, and resource exhaustion, the application implements a robust **Global Rate Limiting** strategy.
+
+*   **Backend Shield**: Implemented via an in-memory `ThrottlerGuard` configured as an `APP_GUARD`. It strictly limits clients to **10 requests per minute** globally. Breaches result in a fast `429 Too Many Requests` rejection, protecting database connections.
+*   **Frontend Interceptor**: The frontend uses a global `api()` wrapper to catch all `429` status codes. Instead of crashing or failing silently, it gracefully intercepts the error and displays a user-friendly Toast notification ("You are doing that too fast. Please wait a minute."), ensuring a premium UX.
+
+---
+
 ## 🛡️ Failure Handling & Observability
 
 *   **Graceful Failures**: All external calls (simulated) are wrapped in robust `try-catch` blocks.
@@ -186,12 +196,27 @@ npm install
 npm run dev
 ```
 
-### Environment Variables
+### Environment Variables (Backend `.env`)
+
+Create a `.env` file in the `backend/` directory with the following variables for local development:
 
 ```env
-DATABASE_URL=postgresql://...
-JWT_SECRET=your_secret
+DATABASE_URL="postgresql://<YOUR_POSTGRES_USER>:<YOUR_POSTGRES_PASSWORD>@localhost:5432/payflowx"
+JWT_SECRET="your_super_secret_jwt_key_here"
+JWT_EXPIRES_IN=3600
+PORT=3001
 ```
+
+---
+
+## 🧪 Testing the APIs (Swagger)
+
+You do not need to run the frontend to test the core backend logic. The entire API is documented and interactive via Swagger UI.
+
+1. Start the backend server (`npm run start:dev`).
+2. Navigate to `http://localhost:3001/api` (or view the [Live Swagger Docs](https://payflowx-backend.onrender.com/api)).
+3. Use the `/auth/login` endpoint to generate a JWT token.
+4. Click **"Authorize"** at the top of the Swagger UI and paste the token to test protected payment routes.
 
 ---
 
@@ -200,7 +225,7 @@ JWT_SECRET=your_secret
 * **Authentication** is simplified (email-only login)
 * No **external payment gateway integration** (logic simulated)
 * **Settlement job** is manually triggered for demo purposes
-* **Rate limiting** and **queues** are discussed but not implemented
+* **Message queues** are discussed but not implemented
 
 These choices are intentional to focus on **system design and correctness**.
 
@@ -212,7 +237,7 @@ In a **production system**:
 
 * Settlement would be triggered via **scheduled background workers** (cron jobs)
 * Authentication would integrate with an **identity provider** (Auth0, Cognito)
-* **Rate limiting** would be enforced at the API gateway level
+* **Rate limiting** would be migrated from In-Memory to a centralized **Redis** cache for multi-server horizontal scaling
 * **Message queues** (Kafka/RabbitMQ) could decouple settlement processing further
 
 ---
