@@ -25,6 +25,8 @@ type Merchant = {
 export default function PaymentsPage() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [merchants, setMerchants] = useState<Merchant[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const [amount, setAmount] = useState('');
     const [merchantId, setMerchantId] = useState('');
@@ -46,6 +48,7 @@ export default function PaymentsPage() {
             try {
                 const paymentsData = await api<Payment[]>('/payments');
                 setPayments(paymentsData);
+                setCurrentPage(1);
             } catch (e) {
                 console.error("Failed to fetch payments", e);
                 toast.error("Failed to load payments");
@@ -90,6 +93,7 @@ export default function PaymentsPage() {
             // Refresh payments only
             const refreshedPayments = await api<Payment[]>('/payments');
             setPayments(refreshedPayments);
+            setCurrentPage(1);
         } catch (error: any) {
             toast.error(error.message || "Failed to create payment");
         } finally {
@@ -105,6 +109,9 @@ export default function PaymentsPage() {
             default: return 'bg-gray-100 text-gray-800';
         }
     };
+
+    const totalPages = Math.ceil(payments.length / itemsPerPage);
+    const paginatedPayments = payments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <ProtectedRoute>
@@ -142,7 +149,7 @@ export default function PaymentsPage() {
                         <button
                             onClick={createPayment}
                             disabled={loading}
-                            className="w-full sm:w-auto bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            className="w-full sm:w-auto bg-gray-900 text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                         >
                             {loading ? 'Processing...' : 'Create Payment'}
                         </button>
@@ -163,7 +170,7 @@ export default function PaymentsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {payments.map((p) => (
+                            {paginatedPayments.map((p) => (
                                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">{p.id.slice(0, 8)}...</td>
                                     <td className="px-6 py-4 text-sm text-gray-900">{p.merchant?.name || '-'}</td>
@@ -184,6 +191,15 @@ export default function PaymentsPage() {
                             )}
                         </tbody>
                     </table>
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+                            <span className="text-sm text-gray-500 font-medium">Page {currentPage} of {totalPages}</span>
+                            <div className="flex gap-2">
+                                <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Prev</button>
+                                <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Next</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </ProtectedRoute>

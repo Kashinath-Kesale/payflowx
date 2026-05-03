@@ -20,12 +20,15 @@ type Row = {
 export default function ReconciliationPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const data = await api<Row[]>('/reconciliation');
       setRows(data);
+      setCurrentPage(1);
     } catch (e) {
       console.error(e);
     } finally {
@@ -36,6 +39,9 @@ export default function ReconciliationPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(rows.length / itemsPerPage);
+  const paginatedRows = rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <ProtectedRoute>
@@ -49,7 +55,7 @@ export default function ReconciliationPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
               <span>{loading ? 'Refreshing Analysis...' : 'Refresh Analysis'}</span>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
@@ -75,7 +81,7 @@ export default function ReconciliationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {rows.map((r) => (
+              {paginatedRows.map((r) => (
                 <tr key={r.paymentId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-sm text-gray-500 font-mono">{r.paymentId.slice(0, 8)}…</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{r.merchantName}</td>
@@ -102,6 +108,15 @@ export default function ReconciliationPage() {
               )}
             </tbody>
           </table>
+          {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+                  <span className="text-sm text-gray-500 font-medium">Page {currentPage} of {totalPages}</span>
+                  <div className="flex gap-2">
+                      <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Prev</button>
+                      <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Next</button>
+                  </div>
+              </div>
+          )}
         </div>
       </div>
     </ProtectedRoute>

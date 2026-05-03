@@ -22,9 +22,14 @@ type Settlement = {
 
 export default function SettlementsPage() {
     const [rows, setRows] = useState<Settlement[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
-        api<Settlement[]>('/settlements').then(setRows);
+        api<Settlement[]>('/settlements').then(data => {
+            setRows(data);
+            setCurrentPage(1);
+        });
     }, []);
 
     const getStatusColor = (status: string) => {
@@ -43,10 +48,14 @@ export default function SettlementsPage() {
             // Refresh list
             const data = await api<Settlement[]>('/settlements');
             setRows(data);
+            setCurrentPage(1);
         } catch (e) {
             toast.error("Failed to process settlements");
         }
     };
+
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
+    const paginatedRows = rows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <ProtectedRoute>
@@ -59,7 +68,7 @@ export default function SettlementsPage() {
                     <div className="relative group">
                         <button
                             onClick={processSettlements}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                         >
                             <span>Process Settlements</span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -85,7 +94,7 @@ export default function SettlementsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {rows.map((s) => (
+                            {paginatedRows.map((s) => (
                                 <tr key={s.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">{s.paymentId.slice(0, 8)}...</td>
                                     <td className="px-6 py-4 text-sm text-gray-900">{s.payment?.merchant?.name || '-'}</td>
@@ -108,6 +117,15 @@ export default function SettlementsPage() {
                             )}
                         </tbody>
                     </table>
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
+                            <span className="text-sm text-gray-500 font-medium">Page {currentPage} of {totalPages}</span>
+                            <div className="flex gap-2">
+                                <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Prev</button>
+                                <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-1.5 border border-gray-300 rounded-md text-sm font-medium disabled:opacity-50 hover:bg-gray-100 transition-colors cursor-pointer disabled:cursor-not-allowed text-gray-700 bg-white">Next</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </ProtectedRoute>
