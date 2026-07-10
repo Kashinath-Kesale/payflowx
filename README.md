@@ -3,7 +3,7 @@
 
 > **A backend-heavy, full-stack financial system that models real-world payment flows with correctness, reliability, and auditability as first-class concerns.**
 
-PayFlowX simulates the **end-to-end lifecycle of digital payments** — from payment initiation to asynchronous settlement and final reconciliation.
+PayFlowX simulates the **end-to-end lifecycle of digital payments** - from payment initiation to asynchronous settlement and final reconciliation.
 The system is designed to highlight **financial correctness**, **failure safety**, and **clear separation of responsibilities**, which are critical in real payment platforms.
 
 ---
@@ -63,9 +63,9 @@ PayFlowX addresses this by:
 
 Payments follow a strict state machine:
 
-* `INITIATED` — payment intent recorded
-* `SUCCESS` — payment confirmed
-* `FAILED` — error occurred (with failure reason)
+* `INITIATED` - payment intent recorded
+* `SUCCESS` - payment confirmed
+* `FAILED` - error occurred (with failure reason)
 
 State transitions are controlled **only within the service layer**.
 
@@ -109,7 +109,7 @@ All financial operations must be **Atomic** to ensure data integrity.
 
 *   **Implementation**: Critical flows utilize `prisma.$transaction`.
 *   **Logic**: The creation of the `INITIATED` record and the subsequent update to `SUCCESS`/`FAILED` happen within a **single managed transaction** scope.
-*   **Benefit**: Ensures consistency — partial or contradictory payment states are never persisted.
+*   **Benefit**: Ensures consistency - partial or contradictory payment states are never persisted.
 
 ---
 
