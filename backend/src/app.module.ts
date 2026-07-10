@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { RedisModule } from './common/redis/redis.module';
 import { HealthController } from './health.controller';
 import { UsersModule } from './modules/users/users.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
@@ -22,6 +23,7 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
       limit: 10,
     }]),
     PrismaModule,
+    RedisModule,
     UsersModule,
     MerchantsModule,
     AuthModule,
