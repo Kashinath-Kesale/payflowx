@@ -4,11 +4,13 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { AppLogger } from '../../common/logger/app-logger';
 import { AppMetrics } from '../../common/metrics/app-metrics';
+import { RedisService } from '../../common/redis/redis.service';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
   ) { }
 
   async createPayment(userId: string, dto: CreatePaymentDto) {
@@ -110,5 +112,60 @@ export class PaymentsService {
     });
 
     return payments;
+  }
+
+  async getStats(userId: string) {
+    const cacheKey = `user:stats:${userId}`;
+
+    // 1. Try to fetch from Redis cache (Fail-Safe)
+    try {
+      const cachedStats = await this.redis.get(cacheKey);
+      if (cachedStats) {
+        return JSON.parse(cachedStats);
+      }
+    } catch (error) {
+      AppLogger.warn('Redis stats cache read failed', {
+        service: 'payments',
+        action: 'stats_cache_read_failed',
+        entityId: userId,
+        metadata: { error: error.message },
+      });
+    }
+
+    // 2. Fetch from PostgreSQL on cache miss
+    const payments = await this.prisma.payment.findMany({
+      where: { userId },
+    });
+
+    const total = payments.length;
+    const successfulPayments = payments.filter((p) => p.status === 'SUCCESS');
+    const successfulCount = successfulPayments.length;
+    const pendingCount = payments.filter((p) => p.status === 'INITIATED').length;
+    const revenue = successfulPayments.reduce(
+      (acc, curr) => acc + Number(curr.amount),
+      0,
+    );
+    const successRate = total ? Math.round((successfulCount / total) * 100) : 0;
+
+    const stats = {
+      totalRevenue: revenue,
+      transactionCount: total,
+      successRate,
+      pending: pendingCount,
+    };
+
+    // 3. Cache the stats in Redis with 60-second TTL
+    try {
+      await this.redis.set(cacheKey, JSON.stringify(stats), 60);
+    } catch (error) {
+      AppLogger.warn('Redis stats cache write failed', {
+        service: 'payments',
+        action: 'stats_cache_write_failed',
+        entityId: userId,
+        metadata: { error: error.message },
+      });
+    }
+
+    return stats;
   }
 }

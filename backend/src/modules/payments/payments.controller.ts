@@ -20,6 +20,12 @@ export class PaymentsController {
         return this.paymentsService.createPayment(user.userId, dto);
     }
 
+    @Get('stats')
+    @ApiOperation({ summary: 'Get payment statistics for the current user' })
+    async getStats(@CurrentUser() user: { userId: string }) {
+        return this.paymentsService.getStats(user.userId);
+    }
+
     @Get()
     @ApiOperation({ summary: 'Get all payments for the current user' })
     async getPayments(@CurrentUser() user: { userId: string }) {

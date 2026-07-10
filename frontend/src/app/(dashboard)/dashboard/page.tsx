@@ -21,21 +21,14 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const payments = await api<Payment[]>('/payments');
+        const statsData = await api<{
+          totalRevenue: number;
+          transactionCount: number;
+          successRate: number;
+          pending: number;
+        }>('/payments/stats');
 
-        const total = payments.length;
-        const successful = payments.filter((p: Payment) => p.status === 'SUCCESS').length;
-        const pending = payments.filter((p: Payment) => p.status === 'INITIATED').length;
-        const revenue = payments
-          .filter((p: Payment) => p.status === 'SUCCESS')
-          .reduce((acc: number, curr: Payment) => acc + Number(curr.amount), 0);
-
-        setStats({
-          totalRevenue: revenue,
-          transactionCount: total,
-          successRate: total ? Math.round((successful / total) * 100) : 0,
-          pending,
-        });
+        setStats(statsData);
       } catch (e) {
         console.error("Failed to fetch stats", e);
       } finally {

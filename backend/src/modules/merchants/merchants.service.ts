@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RedisService } from '../../common/redis/redis.service';
+import { AppLogger } from '../../common/logger/app-logger';
 
 @Injectable()
 export class MerchantsService {
@@ -18,15 +19,18 @@ export class MerchantsService {
     async findMerchantById(id: string) {
         const cacheKey = `merchant:${id}`;
 
-        // 1. Try to fetch from Redis cache (Fail-Safe Caching)
         try {
             const cachedMerchant = await this.redis.get(cacheKey);
             if (cachedMerchant) {
                 return JSON.parse(cachedMerchant);
             }
         } catch (error) {
-            // SDE-1 Interview Tip: If Redis is down, we do NOT crash the payment flow.
-            // We log it and let it fall back to PostgreSQL (fail-safe/graceful degradation).
+            AppLogger.warn('Redis merchant cache read failed', {
+                service: 'merchants',
+                action: 'merchant_cache_read_failed',
+                entityId: id,
+                metadata: { error: error.message },
+            });
         }
 
         // 2. Fetch from PostgreSQL on cache miss
@@ -34,12 +38,16 @@ export class MerchantsService {
             where: { id },
         });
 
-        // 3. Cache the result in Redis with 5-minute TTL (300 seconds)
         if (merchant) {
             try {
                 await this.redis.set(cacheKey, JSON.stringify(merchant), 300);
             } catch (error) {
-                // Fail-safe write
+                AppLogger.warn('Redis merchant cache write failed', {
+                    service: 'merchants',
+                    action: 'merchant_cache_write_failed',
+                    entityId: id,
+                    metadata: { error: error.message },
+                });
             }
         }
 
