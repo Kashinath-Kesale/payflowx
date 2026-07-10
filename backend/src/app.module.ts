@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 import { HealthController } from './health.controller';
@@ -18,10 +19,17 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [{
+          ttl: 60000,
+          limit: 10,
+        }],
+        storage: new ThrottlerStorageRedisService(configService.getOrThrow<string>('REDIS_URL')),
+      }),
+    }),
     PrismaModule,
     RedisModule,
     UsersModule,
