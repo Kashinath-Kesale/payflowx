@@ -100,26 +100,18 @@ All financial operations must be **Atomic** to ensure data integrity.
 
 ---
 
-## 🔴 Redis Caching & Distributed Lock Layer
+## 🔴 Redis Integration Layer (Caching & Concurrency Control)
 
-To improve system performance, prevent race-condition double-charges, and reduce backend database load, we integrated a centralized Redis caching and locking layer:
+To improve system performance, prevent race-condition double-charges, and reduce PostgreSQL query load, a centralized Redis layer is integrated:
 
-### 1. Distributed Idempotency Lock
-To prevent duplicate payments from concurrent clicks, the backend uses Redis as an entry guard:
-* **Lock Acquisition**: When a payment request arrives, the server attempts to set an exclusive lock (`payment:lock:{idempotencyKey}`) in Redis with a **30-second TTL** using the atomic `NX` (Not Exists) command.
-* **Concurrency Protection**: If a duplicate request arrives while the lock is active, it is rejected immediately with an HTTP `409 Conflict` error.
-* **Result Caching**: Once the payment completes, the outcome is cached in Redis (`payment:result:{idempotencyKey}`) for **24 hours**. Subsequent retries are served directly from this cache (< 1ms), avoiding redundant processing.
-
-### 2. Centralized Rate Limiting
-Global API rate limiting (10 requests per minute) is backed by Redis using `@nest-lab/throttler-storage-redis`. Storing request counters in a centralized Redis container ensures that limits are consistently and accurately enforced across multiple horizontally-scaled backend server instances.
-
-### 3. Cache-Aside Strategy
-We apply a cache-aside caching pattern to speed up frequent read operations:
-* **Merchant Profiles**: Active merchant metadata is cached (`merchant:{id}`) for **5 minutes** to avoid querying PostgreSQL on every checkout request.
-* **Dashboard Statistics**: User payment stats are cached (`user:stats:{userId}`) for **60 seconds** to keep frontend dashboard loads fast and snappy.
-
-### 4. High Resiliency & Graceful Degradation
-All Redis operations are wrapped in safe error-handling blocks. If the Redis container goes offline, the server logs the issue as a warning and automatically falls back to PostgreSQL queries and database unique constraints, keeping the checkout application fully functional.
+*   🔒 **Distributed Idempotency Lock**: 
+    *   **Locking**: Uses the atomic `NX` (Not Exists) command to acquire a lock (`payment:lock:{idempotencyKey}`) for **30 seconds**, immediately blocking duplicate concurrent requests with an HTTP `409 Conflict`.
+    *   **Fast Return**: Caches finalized payment results (`payment:result:{key}`) for **24 hours**. Subsequent retries are resolved instantly (< 1ms) from Redis, avoiding redundant database transactions.
+*   🚦 **Centralized Rate Limiting**: Migrated global rate limits (10 requests/minute) to Redis via `@nest-lab/throttler-storage-redis`. This ensures consistent and synchronized enforcement across horizontally-scaled application servers.
+*   ⚡ **Cache-Aside Strategy**:
+    *   **Merchant Metadata**: Caches active merchant profiles (`merchant:{id}`) for **5 minutes** to optimize checkout verification pipelines.
+    *   **Dashboard Statistics**: Caches user payment stats (`user:stats:{userId}`) for **60 seconds** to guarantee rapid frontend dashboard loads.
+*   🛡️ **Resiliency & Graceful Degradation**: All Redis operations execute within exception-handling wrappers. If Redis goes offline, the backend logs a warning and automatically falls back to PostgreSQL queries and DB constraints, ensuring zero downtime.
 
 ---
 
