@@ -14,8 +14,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const options: any = {
       maxRetriesPerRequest: null,
     };
-    if (redisUrl.startsWith('rediss://')) {
-      options.tls = {};
+    if (redisUrl.startsWith('rediss://') || redisUrl.includes('upstash.io')) {
+      options.tls = { rejectUnauthorized: false };
     }
     this.client = new Redis(redisUrl, options);
   }

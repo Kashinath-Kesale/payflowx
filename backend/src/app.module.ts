@@ -25,8 +25,8 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
       useFactory: (configService: ConfigService) => {
         const redisUrl = configService.getOrThrow<string>('REDIS_URL');
         const redisOptions: any = {};
-        if (redisUrl.startsWith('rediss://')) {
-          redisOptions.tls = {};
+        if (redisUrl.startsWith('rediss://') || redisUrl.includes('upstash.io')) {
+          redisOptions.tls = { rejectUnauthorized: false };
         }
         return {
           throttlers: [{
