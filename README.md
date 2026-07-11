@@ -16,6 +16,7 @@ The system is designed to highlight **financial correctness**, **failure safety*
 *   🟦 **Language**: TypeScript (strict typing)
 *   🐘 **Database**: PostgreSQL
 *   💎 **ORM**: Prisma (type-safe DB access)
+*   🔴 **Cache & Locks**: Redis (`ioredis` client)
 *   🔐 **Authentication**: JWT (Passport strategy)
 *   📜 **Logging**: Structured logging via custom `AppLogger`
 *   📄 **API Docs**: Swagger OpenAPI (Live: [https://payflowx-backend.onrender.com/api](https://payflowx-backend.onrender.com/api))
@@ -89,20 +90,6 @@ State transitions are controlled **only within the service layer**.
 
 ---
 
-## 🔁 Idempotency Strategy
-
-**(Critical for preventing double-charging)**
-
-To prevent accidental double-charges (e.g., user clicks "Pay" twice due to network lag), every payment request requires a unique `idempotencyKey`.
-
-*   **Mechanism**: Before creating a payment, the `PaymentsService` performs a check:
-    ```typescript
-    prisma.payment.findUnique({ where: { idempotencyKey } })
-    ```
-*   **Outcome**: If found, the **existing payment object is returned immediately** without re-processing. This ensures **safe retries** even in case of timeouts or network failures.
-
----
-
 ## ⚛️ Transaction & Atomicity Handling
 
 All financial operations must be **Atomic** to ensure data integrity.
@@ -113,12 +100,26 @@ All financial operations must be **Atomic** to ensure data integrity.
 
 ---
 
-## 🚧 Global Rate Limiting (Security & UX)
+## 🔴 Redis Caching & Distributed Lock Layer
 
-To protect the system from malicious actors, brute-force attacks, and resource exhaustion, the application implements a robust **Global Rate Limiting** strategy.
+To improve system performance, prevent race-condition double-charges, and reduce backend database load, we integrated a centralized Redis caching and locking layer:
 
-*   **Backend Shield**: Implemented via an in-memory `ThrottlerGuard` configured as an `APP_GUARD`. It strictly limits clients to **10 requests per minute** globally. Breaches result in a fast `429 Too Many Requests` rejection, protecting database connections.
-*   **Frontend Interceptor**: The frontend uses a global `api()` wrapper to catch all `429` status codes. Instead of crashing or failing silently, it gracefully intercepts the error and displays a user-friendly Toast notification ("You are doing that too fast. Please wait a minute."), ensuring a premium UX.
+### 1. Distributed Idempotency Lock
+To prevent duplicate payments from concurrent clicks, the backend uses Redis as an entry guard:
+* **Lock Acquisition**: When a payment request arrives, the server attempts to set an exclusive lock (`payment:lock:{idempotencyKey}`) in Redis with a **30-second TTL** using the atomic `NX` (Not Exists) command.
+* **Concurrency Protection**: If a duplicate request arrives while the lock is active, it is rejected immediately with an HTTP `409 Conflict` error.
+* **Result Caching**: Once the payment completes, the outcome is cached in Redis (`payment:result:{idempotencyKey}`) for **24 hours**. Subsequent retries are served directly from this cache (< 1ms), avoiding redundant processing.
+
+### 2. Centralized Rate Limiting
+Global API rate limiting (10 requests per minute) is backed by Redis using `@nest-lab/throttler-storage-redis`. Storing request counters in a centralized Redis container ensures that limits are consistently and accurately enforced across multiple horizontally-scaled backend server instances.
+
+### 3. Cache-Aside Strategy
+We apply a cache-aside caching pattern to speed up frequent read operations:
+* **Merchant Profiles**: Active merchant metadata is cached (`merchant:{id}`) for **5 minutes** to avoid querying PostgreSQL on every checkout request.
+* **Dashboard Statistics**: User payment stats are cached (`user:stats:{userId}`) for **60 seconds** to keep frontend dashboard loads fast and snappy.
+
+### 4. High Resiliency & Graceful Degradation
+All Redis operations are wrapped in safe error-handling blocks. If the Redis container goes offline, the server logs the issue as a warning and automatically falls back to PostgreSQL queries and database unique constraints, keeping the checkout application fully functional.
 
 ---
 
@@ -179,7 +180,14 @@ The frontend acts as a **reporting and visualization layer**:
 
 ## 🛠️ Setup & Running Locally
 
-### Backend
+### 1. Run Redis via Docker
+
+Spin up a lightweight Redis instance locally using Docker:
+```bash
+docker run -d --name payflowx-redis -p 6379:6379 redis:7-alpine
+```
+
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -188,7 +196,7 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
-### Frontend
+### 3. Frontend Setup
 
 ```bash
 cd frontend
@@ -202,6 +210,7 @@ Create a `.env` file in the `backend/` directory with the following variables fo
 
 ```env
 DATABASE_URL="postgresql://<YOUR_POSTGRES_USER>:<YOUR_POSTGRES_PASSWORD>@localhost:5432/payflowx"
+REDIS_URL="redis://localhost:6379"
 JWT_SECRET="your_super_secret_jwt_key_here"
 JWT_EXPIRES_IN=3600
 PORT=3001
@@ -237,20 +246,20 @@ In a **production system**:
 
 * Settlement would be triggered via **scheduled background workers** (cron jobs)
 * Authentication would integrate with an **identity provider** (Auth0, Cognito)
-* **Rate limiting** would be migrated from In-Memory to a centralized **Redis** cache for multi-server horizontal scaling
 * **Message queues** (Kafka/RabbitMQ) could decouple settlement processing further
 
 ---
 
-## � Key Takeaways & Core Competencies
+## 🎯 Key Takeaways & Core Competencies
 
 This project demonstrates:
 
 * **Strong domain modeling**
-* **Correct handling of retries and failures**
+* **Distributed locking & caching strategies** using Redis
+* **Graceful degradation and fail-safe coding patterns**
+* **Correct handling of retries, race conditions, and failures**
 * **Clear separation of concerns**
-* **Practical understanding of financial systems**
-* **Ability to reason about scale and correctness**
+* **Practical understanding of financial systems and scalability**
 
 ---
 
