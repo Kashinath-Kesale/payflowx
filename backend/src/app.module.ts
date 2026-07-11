@@ -22,13 +22,20 @@ import { ReconciliationController } from './modules/reconciliation/reconciliatio
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        throttlers: [{
-          ttl: 60000,
-          limit: 10,
-        }],
-        storage: new ThrottlerStorageRedisService(configService.getOrThrow<string>('REDIS_URL')),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const redisUrl = configService.getOrThrow<string>('REDIS_URL');
+        const redisOptions: any = {};
+        if (redisUrl.startsWith('rediss://')) {
+          redisOptions.tls = {};
+        }
+        return {
+          throttlers: [{
+            ttl: 60000,
+            limit: 10,
+          }],
+          storage: new ThrottlerStorageRedisService(redisUrl, redisOptions),
+        };
+      },
     }),
     PrismaModule,
     RedisModule,

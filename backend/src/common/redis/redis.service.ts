@@ -11,9 +11,13 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     const redisUrl = this.configService.getOrThrow<string>('REDIS_URL');
-    this.client = new Redis(redisUrl, {
+    const options: any = {
       maxRetriesPerRequest: null,
-    });
+    };
+    if (redisUrl.startsWith('rediss://')) {
+      options.tls = {};
+    }
+    this.client = new Redis(redisUrl, options);
   }
 
   onModuleDestroy() {
